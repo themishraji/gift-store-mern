@@ -8,6 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState(null);
 
+  console.log("API_URL (prod) =", process.env.REACT_APP_API_URL);
+
   const API_URL = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
