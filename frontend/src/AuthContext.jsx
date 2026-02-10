@@ -8,7 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState(null);
 
-  const API_URL = `${process.env.REACT_APP_API_URL}/api/auth`;
+  const API_URL = process.env.REACT_APP_API_URL;
+
 
 
   // Verify token on mount
