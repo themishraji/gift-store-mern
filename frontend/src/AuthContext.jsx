@@ -10,15 +10,13 @@ export const AuthProvider = ({ children }) => {
 
   const API_URL = process.env.REACT_APP_API_URL;
 
-
-
-  // Verify token on mount
   useEffect(() => {
     if (token) {
       verifyToken();
     } else {
       setLoading(false);
     }
+    // eslint-disable-next-line
   }, []);
 
   const verifyToken = async () => {
@@ -34,13 +32,11 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user);
         setUserRole(data.user.role);
       } else {
-        localStorage.removeItem("authToken");
-        setToken(null);
+        logout();
       }
     } catch (error) {
-      console.error("Error verifying token:", error);
-      localStorage.removeItem("authToken");
-      setToken(null);
+      console.error("Verify token error:", error);
+      logout();
     } finally {
       setLoading(false);
     }
@@ -50,23 +46,22 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await fetch(`${API_URL}/register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, role }),
       });
 
       const data = await response.json();
 
-      if (data.success) {
-        localStorage.setItem("authToken", data.token);
-        setToken(data.token);
-        setUser(data.user);
-        setUserRole(data.user.role);
-        return { success: true, user: data.user };
-      } else {
+      if (!response.ok) {
         return { success: false, message: data.message };
       }
+
+      localStorage.setItem("authToken", data.token);
+      setToken(data.token);
+      setUser(data.user);
+      setUserRole(data.user.role);
+
+      return { success: true };
     } catch (error) {
       return { success: false, message: error.message };
     }
@@ -76,23 +71,22 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await fetch(`${API_URL}/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
-      if (data.success) {
-        localStorage.setItem("authToken", data.token);
-        setToken(data.token);
-        setUser(data.user);
-        setUserRole(data.user.role);
-        return { success: true, user: data.user };
-      } else {
+      if (!response.ok) {
         return { success: false, message: data.message };
       }
+
+      localStorage.setItem("authToken", data.token);
+      setToken(data.token);
+      setUser(data.user);
+      setUserRole(data.user.role);
+
+      return { success: true };
     } catch (error) {
       return { success: false, message: error.message };
     }
@@ -106,7 +100,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isAdmin = () => userRole === "admin";
-  const isAuthenticated = () => token && user;
+  const isAuthenticated = () => Boolean(token);
 
   return (
     <AuthContext.Provider
@@ -127,10 +121,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
